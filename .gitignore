@@ -1,0 +1,4 @@
+node_modules
+.env
+start.sh
+url_shortener_key.pem
