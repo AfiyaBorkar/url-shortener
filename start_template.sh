@@ -69,16 +69,23 @@ npm install  # Installs all required npm packages from package.json
 # ========================================================================================
 # 5️⃣ SET UP ENVIRONMENT VARIABLES
 # ========================================================================================
+# If the user uploaded .env to the home directory, move it into the app directory.
+if [ -f "/home/ec2-user/.env" ] && [ ! -f "$APP_DIR/.env" ]; then
+    echo "Found /home/ec2-user/.env. Copying it to $APP_DIR/.env..."
+    cp /home/ec2-user/.env "$APP_DIR/.env"
+fi
+
+# Fail fast if env file is missing or still contains template placeholders.
 if [ ! -f "$APP_DIR/.env" ]; then
-    echo "No .env file found. Creating a default .env file..."
-    cat <<EOT > "$APP_DIR/.env"
-DB_USER=your_rds_username
-DB_PASSWORD=your_rds_password
-DB_HOST=your_rds_endpoint
-DB_NAME=your_rds_database
-DB_PORT=5432
-PORT=$PORT
-EOT
+    echo "ERROR: Missing $APP_DIR/.env"
+    echo "Upload .env to /home/ec2-user/.env or create $APP_DIR/.env before running this script."
+    exit 1
+fi
+
+if grep -q "your_rds_endpoint\|your_rds_username\|your_rds_password\|your_rds_database" "$APP_DIR/.env"; then
+    echo "ERROR: $APP_DIR/.env still contains placeholder values."
+    echo "Set real DB_HOST, DB_USER, DB_PASSWORD, and DB_NAME values and rerun."
+    exit 1
 fi
 
 # ========================================================================================
@@ -127,7 +134,8 @@ sudo systemctl enable nginx  # Enables Nginx to start automatically on system re
 echo "Starting the application with PM2..."
 sudo npm install -g pm2  # Installs PM2 globally (process manager for Node.js)
 pm2 stop all || true  # Stops any running instances (if they exist)
-pm2 start src/index.js --name myapp  # Starts the application
+pm2 delete myapp || true
+pm2 start src/index.js --name myapp --update-env  # Starts the application with latest env vars
 pm2 save  # Saves the PM2 process list so it restarts after a reboot
 pm2 startup systemd  # Ensures the app starts automatically on system boot
 
