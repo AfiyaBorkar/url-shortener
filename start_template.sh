@@ -19,7 +19,7 @@ GITHUB_REPO="your-private-repo"      # Your private repository name
 GITHUB_TOKEN="your-github-token"     # Your GitHub personal access token for authentication
 APP_DIR="/var/www/myapp"             # Directory where the app will be cloned
 NODE_VERSION="18"                    # Node.js version to install
-PORT=3000                             # Port where your app will run
+PORT=5000                                # Port where your app will run
 
 # ========================================================================================
 # 1️⃣ UPDATE SYSTEM & INSTALL REQUIRED DEPENDENCIES
